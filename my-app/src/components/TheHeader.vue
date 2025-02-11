@@ -5,19 +5,21 @@
       <router-link to="/">Каталог</router-link>
       <router-link v-if="isAuthenticated" to="/cart">Корзина</router-link>
       <router-link v-if="isAuthenticated" to="/orders">Заказы</router-link>
-      <router-link v-if="!isAuthenticated" to="/cart">Войти</router-link>
-      <router-link v-if="!isAuthenticated" to="/cart">Регистрация</router-link>
+      <router-link v-if="!isAuthenticated" to="/login">Войти</router-link>
+      <router-link v-if="!isAuthenticated" to="/register"
+        >Регистрация</router-link
+      >
       <button v-if="isAuthenticated" @click="logout">Выйти</button>
     </nav>
   </header>
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
   computed: {
-    ...mapGetters(["isAuthenticated"]),
+    ...mapState(["isAuthenticated"]),
   },
   methods: {
     ...mapActions(["logout"]),
@@ -27,14 +29,14 @@ export default {
 
 <style scoped>
 .header {
-  background: #333;
-  color: white;
+  background: white;
+  color: blue;
   padding: 15px;
   text-align: center;
 }
 nav a,
 button {
-  color: white;
+  color: blue;
   margin: 0 15px;
   text-decoration: none;
   background: none;
