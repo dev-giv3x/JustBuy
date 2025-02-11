@@ -11,37 +11,18 @@
 <script>
 import Header from "@/components/TheHeader.vue";
 import Footer from "@/components/TheFooter.vue";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   components: {
     Header,
     Footer,
   },
+  computed: {
+    ...mapGetters("auth", ["isAuthenticated"]),
+  },
+  methods: {
+    ...mapActions("auth", ["logout"]),
+  },
 };
 </script>
-
-<style>
-html,
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
-  margin: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-#app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content {
-  flex-grow: 1;
-}
-footer {
-  padding: 10px;
-  margin-top: auto;
-}
-</style>

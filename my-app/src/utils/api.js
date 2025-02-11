@@ -1,34 +1,49 @@
-const API_BASE_URL = "http://lifestealer86.ru/api-shop/";
-
-export async function getProducts() {
-    try {
-        const response = await fetch(`${API_BASE_URL}products`);
-        if (!response.ok) {
-            throw new Error(`Ошибка: ${response.status}`);
-        }
-        return await response.json();
-    } catch (error) {
-        console.error("Ошибка при загрузке товаров:", error);
-        return null;
-    }
-}
-
 export async function registerUser(userData) {
-    try{
-        const response = await fetch(`${API_BASE_URL}signup`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(userData),
-        });
+  try {
+    const response = await fetch("http://lifestealer86.ru/api-shop/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fio: userData.fio,
+        email: userData.email,
+        password: userData.password,
+      }),
+    });
 
-        if (!response.ok) {
-            throw new Error(`Ошибка: ${response.status}`);
-        }
-        return await response.json();
-    } catch (error) {
-        console.error("Ошибка при регистрации:", error);
-        return null;
+    const data = await response.json();
+
+    if (response.status === 400) {
+      throw new Error(data.error?.message || "Некорректные данные");
     }
+
+    if (response.status === 409) {
+      throw new Error("Пользователь с таким email уже существует");
+    }
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || "Ошибка сервера");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Ошибка регистрации:", error);
+    throw error;
+  }
+}
+export async function loginUser(credentials) {
+  const response = await fetch("https://lifestealer86.ru/api-shop/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(credentials),
+  });
+
+  if (!response.ok) {
+    throw new Error("Ошибка авторизации");
+  }
+
+  return await response.json();
 }
