@@ -1,23 +1,23 @@
 export default {
   namespaced: true,
   state: {
-    user: null,
     token: localStorage.getItem("token") || null,
-  },
-  getters: {
-    isAuthenticated: (state) => !!state.token,
+    user: null,
+    isAuthenticated: !!localStorage.getItem("token"),
   },
   mutations: {
+    SET_TOKEN(state, token) {
+      state.token = token;
+      state.isAuthenticated = true;
+      localStorage.setItem("token", token);
+    },
     SET_USER(state, user) {
       state.user = user;
     },
-    SET_TOKEN(state, token) {
-      state.token = token;
-      localStorage.setItem("token", token);
-    },
     LOGOUT(state) {
-      state.user = null;
       state.token = null;
+      state.user = null;
+      state.isAuthenticated = false;
       localStorage.removeItem("token");
     },
   },
@@ -26,26 +26,26 @@ export default {
       try {
         const response = await fetch("http://lifestealer86.ru/api-shop/login", {
           method: "POST",
-          mode: "cors",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(credentials),
         });
 
         const data = await response.json();
-
-        if (response.status === 200 && data.data?.user_token) {
+        if (data.data.user_token) {
           commit("SET_TOKEN", data.data.user_token);
-          localStorage.setItem("user_token", data.data.user_token);
           return true;
+        } else {
+          return false;
         }
-
-        throw new Error(data.error?.message || "Ошибка авторизации");
       } catch (error) {
-        console.error("Login error:", error);
-        throw error;
+        return false;
       }
     },
+    logout({ commit }) {
+      commit("LOGOUT");
+    },
+  },
+  getters: {
+    isAuthenticated: (state) => state.isAuthenticated,
   },
 };

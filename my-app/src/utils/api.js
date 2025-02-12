@@ -33,7 +33,7 @@ export async function registerUser(userData) {
   }
 }
 export async function loginUser(credentials) {
-  const response = await fetch("https://lifestealer86.ru/api-shop/login", {
+  const response = await fetch("http://lifestealer86.ru/api-shop/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
     <h2 class="auth-title">Вход</h2>
-    <form class="auth-form" @submit.prevent="login">
+    <form class="auth-form" @submit.prevent="handleLogin">
       <input type="email" v-model="email" placeholder="Email" required />
       <input type="password" v-model="password" placeholder="Пароль" required />
       <button type="submit">Войти</button>
@@ -11,21 +11,28 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
+
 export default {
   data() {
     return {
       email: "",
       password: "",
-      errorMessage: null,
+      error: null,
     };
   },
   methods: {
-    async login() {
-      try {
-        await this.$store.dispatch("auth/loginUser", this.credentials);
+    ...mapActions("auth", ["loginUser"]),
+    async handleLogin() {
+      this.error = null;
+      const success = await this.loginUser({
+        email: this.email,
+        password: this.password,
+      });
+      if (success) {
         this.$router.push("/");
-      } catch (error) {
-        this.errorMessage = "Ошибка авторизации";
+      } else {
+        this.error = "Ошибка авторизации. Проверьте данные.";
       }
     },
   },
