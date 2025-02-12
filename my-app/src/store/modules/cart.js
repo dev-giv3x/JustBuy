@@ -2,75 +2,95 @@ export default {
   namespaced: true,
   state: {
     cartItems: [],
+    loading: false,
+    error: null,
   },
   mutations: {
-    SET_CART(state, items) {
-      state.cartItems = items;
+    SET_CART(state, cart) {
+      state.cartItems = cart;
     },
     ADD_TO_CART(state, product) {
-      state.cartItems.push(product);
+      const existingItem = state.cartItems.find(
+        (item) => item.product_id === product.product_id
+      );
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        state.cartItems.push({ ...product, quantity: 1 });
+      }
     },
-    REMOVE_FROM_CART(state, productId) {
-      state.cartItems = state.cartItems.filter((item) => item.id !== productId);
+    REMOVE_FROM_CART(state, id) {
+      state.cartItems = state.cartItems.filter((item) => item.id !== id);
+    },
+    CLEAR_CART(state) {
+      state.cartItems = [];
+    },
+    SET_LOADING(state, loading) {
+      state.loading = loading;
+    },
+    SET_ERROR(state, error) {
+      state.error = error;
     },
   },
   actions: {
     async fetchCart({ commit }) {
+      commit("SET_LOADING", true);
       try {
-        const token = localStorage.getItem("token");
         const response = await fetch("http://lifestealer86.ru/api-shop/cart", {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
         const data = await response.json();
         commit("SET_CART", data.data);
       } catch (error) {
-        console.error("Ошибка при получении корзины:", error);
+        commit("SET_ERROR", "Ошибка загрузки корзины");
+      } finally {
+        commit("SET_LOADING", false);
       }
     },
+
     async addToCart({ commit }, product) {
       try {
-        if (!product.id) {
-          throw new Error("Нет product.id, передан некорректный объект товара");
-        }
-
         const response = await fetch(
           `http://lifestealer86.ru/api-shop/cart/${product.id}`,
           {
             method: "POST",
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
             },
           }
         );
 
         if (!response.ok) {
-          throw new Error(
-            `Ошибка при добавлении в корзину: ${response.statusText}`
-          );
+          throw new Error("Ошибка добавления в корзину");
         }
 
         commit("ADD_TO_CART", product);
-        console.log("Товар добавлен в корзину:", product);
       } catch (error) {
-        console.error("Ошибка при добавлении товара в корзину:", error);
+        commit("SET_ERROR", "Ошибка при добавлении товара");
       }
     },
-    async removeFromCart({ dispatch }, itemId) {
+
+    async removeFromCart({ commit }, id) {
       try {
-        const token = localStorage.getItem("token");
         const response = await fetch(
-          `http://lifestealer86.ru/api-shop/cart/${itemId}`,
+          `http://lifestealer86.ru/api-shop/cart/${id}`,
           {
             method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           }
         );
-        if (response.ok) {
-          dispatch("fetchCart");
+
+        if (!response.ok) {
+          throw new Error("Ошибка удаления товара");
         }
+
+        commit("REMOVE_FROM_CART", id);
       } catch (error) {
-        console.error("Ошибка при удалении товара:", error);
+        commit("SET_ERROR", "Ошибка при удалении товара");
       }
     },
   },
