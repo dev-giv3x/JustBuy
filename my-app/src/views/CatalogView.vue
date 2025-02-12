@@ -37,7 +37,8 @@ export default {
     },
   },
   methods: {
-    ...mapActions(["fetchProducts", "addToCart"]),
+    ...mapActions(["fetchProducts"]),
+    ...mapActions("cart", ["addToCart"]),
   },
   async created() {
     await this.fetchProducts();
